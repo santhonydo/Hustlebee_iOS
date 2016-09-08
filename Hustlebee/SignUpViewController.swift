@@ -144,7 +144,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate, UIPickerViewD
                 DispatchQueue.main.async{
                     weakSelf?.isLoading = false
                     if let error = error {
-                        if error.domain == "userExist" {
+                        if error._domain == "userExist" {
                             weakSelf?.present(UIView.warningAlert(title: "Account Already Exist", message: "Please try again using a different email address."), animated: true, completion: nil)
                         }
                     } else if let data = data {

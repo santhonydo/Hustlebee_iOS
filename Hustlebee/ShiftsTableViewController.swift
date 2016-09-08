@@ -9,7 +9,7 @@
 import UIKit
 import CoreLocation
 
-class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegate {
+class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegate, ShiftDetailsTableViewControllerDelegate {
     
     var shifts: [Shift]? {
         didSet {
@@ -27,8 +27,8 @@ class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegat
     private var isLoadingShifts = false
     private var locationManager = CLLocationManager()
     private var userLocation: CLLocation?
-    private var lastLocationError: NSError?
-    private var networkError: NSError? {
+    private var lastLocationError: Error?
+    private var networkError: Error? {
         didSet {
             if networkError != nil {
                 shifts = nil
@@ -60,6 +60,8 @@ class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegat
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.title = ShiftTypes.All
+        //reload data to account for shift acceptant 
+        tableView.reloadData()
     }
     
     // MARK: - Actions
@@ -164,7 +166,7 @@ class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegat
         } else if isLoadingShifts || (networkError != nil){
             return viewHeight
         } else {
-            return UITableViewAutomaticDimension
+            return 88
         }
 
     }
@@ -197,10 +199,17 @@ class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegat
             let destinationVC = segue.destination as! ShiftDetailsTableViewController
             if let shifts = self.shifts {
                 destinationVC.shift = shifts[indexPath.row]
+                destinationVC.delegate = self
             }
         }
     }
-
+    
+    // MARK: - ShiftDetailsTableViewControllerDelegate
+    
+    func shiftDetailsTableViewControllerDidAccept(controller: ShiftDetailsTableViewController, didFinishAddingShift shift: Shift) {
+        shifts = shifts?.filter(){ $0 !== shift }
+        tableView.reloadData()
+    }
     
     // MARK: - Functions
     
@@ -227,7 +236,7 @@ class ShiftsTableViewController: UITableViewController, CLLocationManagerDelegat
         if isLoadingShifts { return } else { isLoadingShifts = true }
         
         DispatchQueue.global(qos: .userInitiated).async { [weak weakSelf = self] in
-            Request.loadAllShifts((weakSelf?.skipShifts)!, (weakSelf?.toGeoCode)!) { (shifts, error) in
+            Request.loadShifts((weakSelf?.skipShifts)!, (weakSelf?.toGeoCode)!, nil) { (shifts, error) in
                 weakSelf?.isLoadingShifts = false
                 DispatchQueue.main.async {
                     if let error = error {

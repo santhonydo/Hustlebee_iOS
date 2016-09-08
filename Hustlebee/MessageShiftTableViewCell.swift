@@ -12,5 +12,4 @@ class MessageShiftTableViewCell: UITableViewCell {
     
     @IBOutlet weak var message: UILabel!
     
-
 }

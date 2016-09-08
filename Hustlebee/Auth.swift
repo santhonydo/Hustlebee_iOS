@@ -14,7 +14,7 @@ class Auth {
         return ["email": email.isValidEmail, "password": password.isValidPassword]
     }
     
-    func getUserInfoFromDB(_ email: String, _ password: String, _ completion: @escaping (User?, NSError?) -> Void) {
+    func getUserInfoFromDB(_ email: String, _ password: String, _ completion: @escaping (User?, Error?) -> Void) {
         Request.userAuth(email, password) { user, error in
             print("error model: \(error)")
             if let error = error {

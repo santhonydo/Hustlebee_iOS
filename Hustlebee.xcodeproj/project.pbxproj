@@ -23,6 +23,9 @@
 		825BAB051D39909F00DD3191 /* WorkersTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 825BAB041D39909F00DD3191 /* WorkersTabBarViewController.swift */; };
 		826DE6C91D39A58D006E491E /* Shift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826DE6C81D39A58D006E491E /* Shift.swift */; };
 		8273367C1D6F928800FAF171 /* LoadingTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8273367B1D6F928800FAF171 /* LoadingTableViewCell.xib */; };
+		828B98E71D7E7056009471D6 /* UserShiftTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 828B98E61D7E7056009471D6 /* UserShiftTableViewCell.xib */; };
+		828B98E91D7F5EA0009471D6 /* UserShiftTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 828B98E81D7F5EA0009471D6 /* UserShiftTableViewCell.swift */; };
+		828B98EB1D80B15D009471D6 /* UserShiftDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 828B98EA1D80B15D009471D6 /* UserShiftDetailTableViewController.swift */; };
 		829597791D5BFC2100A27677 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 829597781D5BFC2100A27677 /* Main.storyboard */; };
 		82964B761D6E070A00579901 /* ShiftDetailsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 82964B751D6E070A00579901 /* ShiftDetailsTableViewCell.xib */; };
 		82964B781D6F468600579901 /* ProfileTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82964B771D6F468600579901 /* ProfileTableViewCell.swift */; };
@@ -57,6 +60,9 @@
 		825BAB041D39909F00DD3191 /* WorkersTabBarViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkersTabBarViewController.swift; sourceTree = "<group>"; };
 		826DE6C81D39A58D006E491E /* Shift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shift.swift; sourceTree = "<group>"; };
 		8273367B1D6F928800FAF171 /* LoadingTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoadingTableViewCell.xib; sourceTree = "<group>"; };
+		828B98E61D7E7056009471D6 /* UserShiftTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UserShiftTableViewCell.xib; sourceTree = "<group>"; };
+		828B98E81D7F5EA0009471D6 /* UserShiftTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserShiftTableViewCell.swift; sourceTree = "<group>"; };
+		828B98EA1D80B15D009471D6 /* UserShiftDetailTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserShiftDetailTableViewController.swift; sourceTree = "<group>"; };
 		829597781D5BFC2100A27677 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		82964B751D6E070A00579901 /* ShiftDetailsTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ShiftDetailsTableViewCell.xib; sourceTree = "<group>"; };
 		82964B771D6F468600579901 /* ProfileTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileTableViewCell.swift; sourceTree = "<group>"; };
@@ -148,10 +154,21 @@
 			isa = PBXGroup;
 			children = (
 				825BAB041D39909F00DD3191 /* WorkersTabBarViewController.swift */,
-				82EDF8C91D63E41A003EB349 /* ProfileTableViewController.swift */,
+				828B98E51D7E6DD9009471D6 /* Profile Tab */,
 				82A0FA081D3B4FA80064CBAF /* Shift Tab */,
+				82C855C91D49F83B00A68D3C /* Custom Cells */,
+				8290CCA81D3B66A40020405A /* Table View Custom Cells */,
 			);
 			name = Workers;
+			sourceTree = "<group>";
+		};
+		828B98E51D7E6DD9009471D6 /* Profile Tab */ = {
+			isa = PBXGroup;
+			children = (
+				82EDF8C91D63E41A003EB349 /* ProfileTableViewController.swift */,
+				828B98EA1D80B15D009471D6 /* UserShiftDetailTableViewController.swift */,
+			);
+			name = "Profile Tab";
 			sourceTree = "<group>";
 		};
 		8290CCA81D3B66A40020405A /* Table View Custom Cells */ = {
@@ -161,6 +178,7 @@
 				8246AEDC1D4893160057A07C /* MessageShiftTableViewCell.xib */,
 				82964B751D6E070A00579901 /* ShiftDetailsTableViewCell.xib */,
 				8273367B1D6F928800FAF171 /* LoadingTableViewCell.xib */,
+				828B98E61D7E7056009471D6 /* UserShiftTableViewCell.xib */,
 			);
 			name = "Table View Custom Cells";
 			sourceTree = "<group>";
@@ -170,8 +188,6 @@
 			children = (
 				825418251D39A2BD001933A9 /* ShiftsTableViewController.swift */,
 				82104BF91D5D218600E26FD7 /* ShiftDetailsTableViewController.swift */,
-				82C855C91D49F83B00A68D3C /* Custom Cells */,
-				8290CCA81D3B66A40020405A /* Table View Custom Cells */,
 			);
 			name = "Shift Tab";
 			sourceTree = "<group>";
@@ -185,6 +201,7 @@
 				8254A6C41D5B9F0500B01865 /* LoadingTableViewCell.swift */,
 				82B9C2301D3FE92100873EC0 /* ShiftDetailsTableViewCell.swift */,
 				8246AEDE1D48940A0057A07C /* MessageShiftTableViewCell.swift */,
+				828B98E81D7F5EA0009471D6 /* UserShiftTableViewCell.swift */,
 			);
 			name = "Custom Cells";
 			sourceTree = "<group>";
@@ -264,6 +281,7 @@
 				82B9C22F1D3F42BC00873EC0 /* Assets.xcassets in Resources */,
 				829597791D5BFC2100A27677 /* Main.storyboard in Resources */,
 				824C5AAF1D278D6F0016372B /* LaunchScreen.storyboard in Resources */,
+				828B98E71D7E7056009471D6 /* UserShiftTableViewCell.xib in Resources */,
 				82964B761D6E070A00579901 /* ShiftDetailsTableViewCell.xib in Resources */,
 				8246AEDD1D4893160057A07C /* MessageShiftTableViewCell.xib in Resources */,
 				82D821711D3B757300FB4D3F /* ShiftTableSectionHeader.xib in Resources */,
@@ -280,8 +298,10 @@
 			files = (
 				825418261D39A2BD001933A9 /* ShiftsTableViewController.swift in Sources */,
 				821FAA811D2B27B600B2507A /* SignUpViewController.swift in Sources */,
+				828B98EB1D80B15D009471D6 /* UserShiftDetailTableViewController.swift in Sources */,
 				824C5AA71D278D6E0016372B /* LoginViewController.swift in Sources */,
 				82964B781D6F468600579901 /* ProfileTableViewCell.swift in Sources */,
+				828B98E91D7F5EA0009471D6 /* UserShiftTableViewCell.swift in Sources */,
 				8246AEDF1D48940A0057A07C /* MessageShiftTableViewCell.swift in Sources */,
 				824C5ABD1D2B0F9C0016372B /* HustlebeeStrings.swift in Sources */,
 				82C855CF1D5370A300A68D3C /* Address.swift in Sources */,

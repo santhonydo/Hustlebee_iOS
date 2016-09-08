@@ -16,7 +16,7 @@ class Registration {
     
     var userData = [String:AnyObject]()
     
-    func registerUser(_ completion: ((User?, NSError?) -> Void)) {
+    func registerUser(_ completion: ((User?, Error?) -> Void)) {
         let userData = UserRegistrationInfo.UserData
         Request.registerUser(userData as NSDictionary) { data, error in
             if let error = error {

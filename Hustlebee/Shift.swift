@@ -18,6 +18,7 @@ class Shift: NSObject
     let endDateAndTime: Date
     let hourlyRate: String
     let shiftDescription: String
+    let status: Int
     let image: URL?
     
     init?(data: NSDictionary?) {
@@ -29,7 +30,8 @@ class Shift: NSObject
             let startDateAndTime = data?.value(forKey: ShiftInfo.StartDateAndTime) as? Date,
             let endDateAndTime = data?.value(forKey: ShiftInfo.EndDateAndTime) as? Date,
             let hourlyRate = data?.value(forKey: ShiftInfo.HourlyRate) as? String,
-            let shiftDescription = data?.value(forKey: ShiftInfo.ShiftDescription) as? String
+            let shiftDescription = data?.value(forKey: ShiftInfo.ShiftDescription) as? String,
+            let shiftStatus = data?.value(forKey: ShiftInfo.Status) as? Int
         else {
             return nil
         }
@@ -42,6 +44,7 @@ class Shift: NSObject
         self.startDateAndTime = startDateAndTime
         self.endDateAndTime = endDateAndTime
         self.hourlyRate = hourlyRate
+        self.status = shiftStatus
         let urlString = data?.value(forKeyPath: ShiftInfo.Image) as? String ?? ""
         self.image = (urlString.characters.count > 0) ? URL(string: urlString) : nil
     }
@@ -57,5 +60,6 @@ class Shift: NSObject
         static let Description = "description"
         static let ShiftDescription = "shiftDescription"
         static let Image = "image"
+        static let Status = "status"
     }
 }

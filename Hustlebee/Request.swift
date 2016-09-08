@@ -10,10 +10,11 @@ import Foundation
 
 class Request
 {
-    class func loadAllShifts(_ page: Int, _ toGeoCode: Bool, _ completion: (([Shift]?, NSError?) -> Void)) {
+    // MARK: - Shift
+    class func loadShifts(_ page: Int?, _ toGeoCode: Bool?, _ userID: String?, _ completion: (([Shift]?, Error?) -> Void)) {
     
-        if let shiftsURL = URL(string: HustlebeAPIs.LoginUrl + HustlebeAPIs.AllShifts) {
-            let shiftsToGet: [String: AnyObject] = ["skip": page as AnyObject, "toGeoCode": toGeoCode as AnyObject]
+        if let shiftsURL = createURL(endPoint: (userID == nil) ? HustlebeAPIs.AllShifts : HustlebeAPIs.UserShifts) {
+            let shiftsToGet: NSDictionary = (userID == nil) ? ["skip": page!, "toGeoCode": toGeoCode!] : ["userID": userID!]
             
             self.performRequest(url: shiftsURL, content: shiftsToGet as NSDictionary) { data, error in
                 if let error = error {
@@ -22,11 +23,34 @@ class Request
                     completion(parseShiftsDictionary(dic: data), nil)
                 }
             }
+        } else {
+            completion(nil, SystemError.InvalidURL)
         }
     }
     
-    class func userAuth(_ email: String, _ password: String, _ completion: @escaping (User?, NSError?) -> Void){
-        if let userURL = URL(string: HustlebeAPIs.LoginUrl + HustlebeAPIs.UserAuth) {
+    class func assignShiftTo(_ userID: String, _ shiftID: String, _ completion: @escaping (NSDictionary?, Error?) -> Void) {
+        if let assignShiftURL = createURL(endPoint: HustlebeAPIs.AssignShift) {
+            let assignShift: NSDictionary = ["userID": userID, "shiftID": shiftID]
+            
+            self.performRequest(url: assignShiftURL, content: assignShift) { data, error in
+                if let error = error {
+                    completion(nil, error)
+                } else if let data = data {
+                    completion(data, nil)
+                } else {
+                    completion(nil, NetworkError.Unknown)
+                }
+            }
+        }
+    }
+    
+    static func createURL(endPoint: String) -> URL? {
+        return URL(string: HustlebeAPIs.ApiURL + endPoint)
+    }
+    
+    // MARK: - User
+    class func userAuth(_ email: String, _ password: String, _ completion: @escaping (User?, Error?) -> Void){
+        if let userURL = createURL(endPoint: HustlebeAPIs.UserAuth) {
             let userToGet = ["email": email, "password": password]
             
             self.performRequest(url: userURL, content: userToGet as NSDictionary) { data, error in
@@ -51,8 +75,8 @@ class Request
         }
     }
     
-    class func registerUser(_ data: NSDictionary, _ completion: @escaping (User?, NSError?) -> Void){
-        if let userRegistrationURL = URL(string: HustlebeAPIs.LoginUrl + HustlebeAPIs.UserRegistration) {
+    class func registerUser(_ data: NSDictionary, _ completion: @escaping (User?, Error?) -> Void){
+        if let userRegistrationURL = createURL(endPoint: HustlebeAPIs.UserRegistration) {
             
             self.performRequest(url: userRegistrationURL, content: data) { data, error in
                 if let error = error {
@@ -72,7 +96,7 @@ class Request
         }
     }
     
-    static func performRequest(url: URL, content: NSDictionary, _ completion: @escaping (NSDictionary?, NSError?) -> Void ) {
+    static func performRequest(url: URL, content: NSDictionary, _ completion: @escaping (NSDictionary?, Error?) -> Void ) {
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -80,7 +104,7 @@ class Request
         do {
             let json = try JSONSerialization.data(withJSONObject: content, options: [])
             request.httpBody = json
-        } catch let error as NSError {
+        } catch let error {
             completion(nil, error)
         }
 
@@ -88,7 +112,7 @@ class Request
         
         let dataTask = session.dataTask(with: request as URLRequest) { data, response, error  in
             if let error = error {
-                completion(nil, error as NSError?)
+                completion(nil, error)
             } else if let httpResponse = response as? HTTPURLResponse{
                 if httpResponse.statusCode == 200 {
                     if let data = data, let dictionary = self.parseJSON(data: data) {
@@ -96,7 +120,7 @@ class Request
                     }
                 }
             } else {
-                print("failure: \(response)")
+                completion(nil, NetworkError.Unknown)
             }
         }
         
@@ -130,7 +154,6 @@ class Request
     
     static  func parseShift(_ shift: NSDictionary) -> Shift? {
         var shiftInfo: Shift?
-
         guard
             let employer = shift.value(forKey: UserInfo.Employer.Employer) as? NSDictionary,
             let addressItem = shift.value(forKey: ShiftInfo.ShiftAddress) as? NSDictionary,
@@ -143,10 +166,12 @@ class Request
             let startDateAndTime = shiftDateAndTime.value(forKey: ShiftInfo.Start) as? Date,
             let endDateAndTime = shiftDateAndTime.value(forKey: ShiftInfo.End) as? Date,
             let hourlyRate = shift.value(forKey: ShiftInfo.Wage) as? String,
-            let shiftDescription = shift.value(forKey: ShiftInfo.Description) as? String
+            let shiftDescription = shift.value(forKey: ShiftInfo.Description) as? String,
+            let shiftStatus = shift.value(forKey: ShiftInfo.Accepted) as? Int
         else {
             return nil
         }
+        
         
         let image = shift.value(forKey: ShiftInfo.Image) as? String ?? ""
         
@@ -160,7 +185,8 @@ class Request
                 ShiftInfo.EndDateAndTime : endDateAndTime,
                 ShiftInfo.HourlyRate : hourlyRate,
                 ShiftInfo.Image : image,
-                ShiftInfo.ShiftDescription : shiftDescription
+                ShiftInfo.ShiftDescription : shiftDescription,
+                ShiftInfo.Status : shiftStatus
             ]
             
             shiftInfo = Shift(data: newShift)
@@ -278,6 +304,14 @@ class Request
         case Unknown
     }
     
+    enum SystemError: Error {
+        case InvalidURL
+    }
+    
+    enum NetworkError: Error {
+        case Unknown
+    }
+    
     struct UserInfo {
         static let User = "user"
         static let ID = "id"
@@ -326,6 +360,8 @@ class Request
         static let EndDateAndTime = "endDateAndTime"
         static let Duration = "duration"
         static let ShiftAddress = "shiftAddress"
+        static let Accepted = "accepted"
+        static let Status = "status"
         static let Image = "image"
         static let Wage = "wage"
         static let HourlyRate = "hourlyRate"
@@ -343,7 +379,9 @@ class Request
     }
 
     struct HustlebeAPIs {
-        static let LoginUrl = "http://localhost:8888/api/"
+        static let ApiURL = "http://localhost:8888/api/"
+        static let AssignShift = "assignShift"
+        static let UserShifts = "getUserShifts"
         static let AllShifts = "allShifts"
         static let UserAuth = "login"
         static let UserRegistration = "registeration"

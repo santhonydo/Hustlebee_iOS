@@ -8,23 +8,49 @@
 
 import UIKit
 
-class ProfileTableViewController: UITableViewController {
+class ProfileTableViewController: UITableViewController, UserShiftDetailTableViewControllerDelegate {
     
-    var user: User!
+    var user: User! {
+        didSet {
+            loadUserShifts()
+        }
+    }
+    
+    var shifts: [Shift]? {
+        didSet {
+            refreshControl?.endRefreshing()
+            tableView.reloadData()
+        }
+    }
     
     private var isLoadingShifts = false
-    private var networkError: NSError?
+    private var networkError: Error? {
+        didSet {
+            refreshControl?.endRefreshing()
+            tableView.reloadData()
+        }
+    }
     
     override func viewDidLoad() {
         registerCellNibs()
         setupUI()
         loadUserProfile()
+        loadUserShifts()
+        refreshControl?.addTarget(self, action: #selector(refreshShifts), for: .valueChanged)
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        loadUserShifts()
+    }
+    
     @IBAction func LogOut(_ sender: UIBarButtonItem) {
         UserDefaults.standard.set(false, forKey: "userLoggedIn")
         UserDefaults.standard.set(nil, forKey: "userProfileData")
         UIApplication.shared.delegate?.window??.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "LoginViewController")
     }
+    
+    // MARK: - Func
     
     private func loadUserProfile() {
         if let userProfileData = UserDefaults.standard.object(forKey: "userProfileData") as? Data {
@@ -34,6 +60,11 @@ class ProfileTableViewController: UITableViewController {
         }
     }
     
+    @objc private func refreshShifts() {
+        loadUserShifts()
+        refreshControl?.beginRefreshing()
+    }
+    
     private func registerCellNibs() {
         let loadingCellNib = UINib(nibName: CellIdentifier.LoadingTableViewCell, bundle: nil)
         tableView.register(loadingCellNib, forCellReuseIdentifier: CellIdentifier.LoadingTableViewCell)
@@ -41,12 +72,36 @@ class ProfileTableViewController: UITableViewController {
         tableView.register(shiftCellNib, forCellReuseIdentifier: CellIdentifier.ShiftDetailsTableViewCell)
         let messageCellNib = UINib(nibName: CellIdentifier.MessageShiftTableViewCell, bundle: nil)
         tableView.register(messageCellNib, forCellReuseIdentifier: CellIdentifier.MessageShiftTableViewCell)
+        let userShiftCellNib = UINib(nibName: TypesOfCell.UserShiftTableViewCell, bundle: nil)
+        tableView.register(userShiftCellNib, forCellReuseIdentifier: TypesOfCell.UserShiftTableViewCell)
     }
     
     private func setupUI(){
         tableView.tableFooterView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0))
     }
     
+    private func loadUserShifts() {
+        isLoadingShifts = true
+        DispatchQueue.global(qos: .userInitiated).async { [weak weakSelf = self] in
+            Request.loadShifts(nil, nil, weakSelf?.user.id) { shifts, error in
+                weakSelf?.isLoadingShifts = false
+                DispatchQueue.main.async {
+                    if let error = error {
+                        weakSelf?.networkError = error
+                    } else if let shifts = shifts {
+                        var scheduledShifts = [Shift]()
+                        for shift in shifts {
+                            if (shift.status == 1) {
+                                scheduledShifts.append(shift)
+                            }
+                        }
+                        
+                        weakSelf?.shifts = scheduledShifts
+                    }
+                }
+            }
+        }
+    }
     
     // MARK: - UITableViewDelegate
     
@@ -56,8 +111,12 @@ class ProfileTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-            case 0 : return 1
-            case 1 : return 1
+            case 0 :
+                return 1
+            case 1 :
+                let count = (shifts != nil && shifts!.count > 0) ? shifts!.count : 1
+                print("what is count: \(count)")
+                return count
             default: assert(false, "Unexpected Case")
         }
     }
@@ -68,6 +127,7 @@ class ProfileTableViewController: UITableViewController {
             case 0:
                 let profileCell = tableView.dequeueReusableCell(withIdentifier: CellIdentifier.ProfileCell) as! ProfileTableViewCell
                 profileCell.user = self.user
+                profileCell.scheduledShifts.text = (shifts != nil) ? "\(shifts!.count) Scheduled" : "0 Scheduled"
                 cell = profileCell
             case 1:
                 if isLoadingShifts {
@@ -75,12 +135,14 @@ class ProfileTableViewController: UITableViewController {
                     loadingCell.activityIndicator.startAnimating()
                     cell.selectionStyle = UITableViewCellSelectionStyle.none
                     cell = loadingCell
-//                } else if let availableShifts = shifts where shifts!.count > 0{
-//                    let detailCell = tableView.dequeueReusableCell(withIdentifier: TypesOfCell.ShiftDetailsTableViewCell) as! ShiftDetailsTableViewCell
-//                    detailCell.shift = availableShifts[indexPath.row]
-//                    detailCell.borderColor = UIColor.clear()
-//                    cell = detailCell
+                } else if let availableShifts = shifts, shifts!.count > 0{
+                    print("shitfs : \(shifts?.count)")
+                    let detailCell = tableView.dequeueReusableCell(withIdentifier: TypesOfCell.UserShiftTableViewCell) as! UserShiftTableViewCell
+                    detailCell.shift = availableShifts[indexPath.row]
+                    detailCell.borderColor = UIColor.clear
+                    cell = detailCell
                 } else {
+                    print("message cell")
                     let messageCell = tableView.dequeueReusableCell(withIdentifier: CellIdentifier.MessageShiftTableViewCell) as! MessageShiftTableViewCell
                     if (networkError != nil){
                         messageCell.message.text = Messages.NetworkError
@@ -97,19 +159,36 @@ class ProfileTableViewController: UITableViewController {
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        performSegue(withIdentifier: "UserShiftDetail", sender: indexPath)
+    }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
-        case 0:
-            tableView.estimatedRowHeight = CGFloat(220.0)
-            return UITableViewAutomaticDimension
-        case 1:
-            return CGFloat(88.0)
-        default:
-            assert(false, "Unexpected Height")
+            case 0:
+                tableView.estimatedRowHeight = CGFloat(220.0)
+                return UITableViewAutomaticDimension
+           
+            default: return UITableViewAutomaticDimension
         }
     }
     
+    // Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "UserShiftDetail" {
+            let indexPath = sender as! IndexPath
+            let destinationVC = segue.destination as! UserShiftDetailTableViewController
+            if let shifts = self.shifts {
+                destinationVC.shift = shifts[indexPath.row]
+                destinationVC.delegate = self
+            }
+        }
+    }
+    
+    func userShiftDetailTableViewControllerDidComplete(controller: UserShiftDetailTableViewController, didFinishAddingShift shift: Shift) {
+        
+    }
     // Static Constants
     
     struct CellIdentifier {
@@ -120,8 +199,24 @@ class ProfileTableViewController: UITableViewController {
     }
     
     struct Messages {
-        static let NetworkError = "Network Error"
+        static let NetworkError = "Check your network and try again."
         static let NoScheduledShifts = "You have no scheduled shifts."
+    }
+    
+    private struct TypesOfCell {
+        static let ShiftTableSectionHeader = "ShiftTableSectionHeader"
+        static let MessageShiftTableViewCell = "MessageShiftTableViewCell"
+        static let ShiftDetailsTableViewCell = "ShiftDetailsTableViewCell"
+        static let LoadingTableViewCell = "LoadingTableViewCell"
+        static let UserShiftTableViewCell = "UserShiftTableViewCell"
+        
+        struct Identifier {
+            static let ShiftCell = "Shift Cell"
+            static let ShiftPositionCell = "Shift Position Cell"
+            static let ShiftDetailsCell = "Shift Details Cell"
+            static let LoadingShiftsCell = "Loading Shifts Cell"
+            static let PositionShiftCell = "Position Shift Cell"
+        }
     }
 
 }

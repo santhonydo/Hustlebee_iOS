@@ -84,7 +84,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 DispatchQueue.main.async{
                     if let error = error {
                         weakSelf?.isLoading = false
-                        weakSelf?.present(UIView.warningAlert(title: "Log In Error", message: error.domain), animated: true, completion: nil)
+                        weakSelf?.present(UIView.warningAlert(title: "Log In Error", message: error._domain), animated: true, completion: nil)
                     } else if user != nil {
                         UIApplication.shared.delegate?.window??.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
                     }
