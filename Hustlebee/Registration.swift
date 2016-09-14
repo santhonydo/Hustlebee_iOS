@@ -18,11 +18,16 @@ class Registration {
     
     func registerUser(_ completion: ((User?, Error?) -> Void)) {
         let userData = UserRegistrationInfo.UserData
-        Request.registerUser(userData as NSDictionary) { data, error in
+        Request.registerUser(userData as NSDictionary) { user, error in
             if let error = error {
                 completion(nil, error)
-            } else if let data = data {
-                completion(data, nil)
+            } else if let user = user {
+                let encodedUserData = NSKeyedArchiver.archivedData(withRootObject: user)
+                let userDefaults = UserDefaults.standard
+                userDefaults.set(encodedUserData, forKey: "userProfileData")
+                userDefaults.set(true, forKey: "userLoggedIn")
+                userDefaults.synchronize()
+                completion(user, nil)
             }
         }
     }

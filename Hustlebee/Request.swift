@@ -44,11 +44,38 @@ class Request
         }
     }
     
-    static func createURL(endPoint: String) -> URL? {
-        return URL(string: HustlebeAPIs.ApiURL + endPoint)
+    class func completeShift(_ ID: String, _ markedDate: String, _ status: Int, _ completion: @escaping (NSDictionary?, Error?) -> Void) {
+        if let completeShiftURL = createURL(endPoint: HustlebeAPIs.CompleteShift) {
+            let completeShift: NSDictionary = ["shiftID": ID, "shiftStatus": status, "shiftClockedOutTime": markedDate]
+            
+            self.performRequest(url: completeShiftURL, content: completeShift) { data, error in
+                if let error = error {
+                    completion(nil, error)
+                } else if let data = data {
+                    completion(data, nil)
+                } else {
+                    completion(nil, NetworkError.Unknown)
+                }
+            }
+        }
     }
     
     // MARK: - User
+    class func updateUserProfile(_ ID: String, _ firstName: String, _ lastName: String, _ currentEmail: String, _ updatedEmail: String, _ phoneNumber: String, _ licenseExpirationDate: String, _ completion: @escaping (User?, Error?) -> Void) {
+        if let updateUserProfileURL = createURL(endPoint: HustlebeAPIs.UpdateUserProfile) {
+            let updateUserProfile: NSDictionary = ["userID": ID, "firstName": firstName, "lastName": lastName, "currentEmail": currentEmail, "email": updatedEmail, "phoneNumber": phoneNumber, "licenseExpirationDate": licenseExpirationDate]
+            self.performRequest(url: updateUserProfileURL, content: updateUserProfile) { data, error in
+                if let error = error {
+                    completion(nil, error)
+                } else if let data = data {
+                    completion(parseUser(data), nil)
+                } else {
+                    completion(nil, NetworkError.Unknown)
+                }
+            }
+        }
+    }
+    
     class func userAuth(_ email: String, _ password: String, _ completion: @escaping (User?, Error?) -> Void){
         if let userURL = createURL(endPoint: HustlebeAPIs.UserAuth) {
             let userToGet = ["email": email, "password": password]
@@ -75,15 +102,26 @@ class Request
         }
     }
     
-    class func registerUser(_ data: NSDictionary, _ completion: @escaping (User?, Error?) -> Void){
+    class func registerUser(_ data: NSDictionary, _ completion: @escaping (User?, Error?) -> Void) {
+        print(data)
         if let userRegistrationURL = createURL(endPoint: HustlebeAPIs.UserRegistration) {
-            
-            self.performRequest(url: userRegistrationURL, content: data) { data, error in
+            let userToRegister: NSDictionary = [
+                UserInfo.FirstName: data.object(forKey: UserInfo.FirstName) as! String,
+                UserInfo.LastName: data.object(forKey: UserInfo.LastName) as! String,
+                UserInfo.Occupation: data.object(forKey: UserInfo.Occupation) as! String,
+                UserInfo.License.Number: data.object(forKey: UserInfo.License.Number) as! String,
+                UserInfo.License.State: data.object(forKey: UserInfo.License.State) as! String,
+                UserInfo.License.ExpirationDate: data.object(forKey: UserInfo.License.ExpirationDate) as! String,
+                UserInfo.Contact.PhoneNumber: data.object(forKey: UserInfo.Contact.PhoneNumber) as! String,
+                UserInfo.Contact.Email: data.object(forKey: UserInfo.Contact.Email) as! String,
+                UserInfo.Password: data.object(forKey: UserInfo.Password) as! String,
+                UserInfo.Employer.Employer: data.object(forKey: UserInfo.Employer.IsEmployer) as! Bool
+            ]
+            self.performRequest(url: userRegistrationURL, content: userToRegister) { data, error in
                 if let error = error {
                     completion(nil, error)
                     return
                 }
-                
                 if let data = data {
                     if data.value(forKey: "userExist") != nil {
                         let userExistError = NSError(domain: "userExist", code: 0, userInfo: nil)
@@ -96,20 +134,25 @@ class Request
         }
     }
     
+    static func createURL(endPoint: String) -> URL? {
+        return URL(string: HustlebeAPIs.ApiURL + endPoint)
+    }
+    
     static func performRequest(url: URL, content: NSDictionary, _ completion: @escaping (NSDictionary?, Error?) -> Void ) {
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         do {
-            let json = try JSONSerialization.data(withJSONObject: content, options: [])
+            let json = try JSONSerialization.data(withJSONObject: content, options: .prettyPrinted)
             request.httpBody = json
+
         } catch let error {
             completion(nil, error)
         }
 
         let session = URLSession(configuration: URLSessionConfiguration.default)
-        
+
         let dataTask = session.dataTask(with: request as URLRequest) { data, response, error  in
             if let error = error {
                 completion(nil, error)
@@ -132,7 +175,6 @@ class Request
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
         } catch {
-            print("JSON Error: \(error)")
             return nil
         }
     }
@@ -257,7 +299,6 @@ class Request
     }
     
     static func parseUser(_ user: NSDictionary) -> User? {
-       
         guard
             let id = user.value(forKey: UserInfo._ID) as? String,
             let firstName = user.value(forKey: UserInfo.FirstName) as? String,
@@ -267,7 +308,6 @@ class Request
         else {
             return nil
         }
-        
         
         let name = "\(firstName) \(lastName)"
         let state = user.value(forKey: UserInfo.License.State) as? String ?? ""
@@ -282,6 +322,8 @@ class Request
         
         let userData: NSDictionary? = [
             UserInfo.ID : id,
+            UserInfo.FirstName : firstName,
+            UserInfo.LastName : lastName,
             UserInfo.Name : name,
             UserInfo.Contact.PhoneNumber : phoneNumber,
             UserInfo.Contact.Email : email,
@@ -323,6 +365,7 @@ class Request
         static let ProfileImageURL = "profileImageURL"
         static let Profession = "profession"
         static let Occupation = "occupation"
+        static let Password = "password"
         
         struct Employer {
             static let Industry = "Industry"
@@ -383,8 +426,10 @@ class Request
         static let AssignShift = "assignShift"
         static let UserShifts = "getUserShifts"
         static let AllShifts = "allShifts"
+        static let CompleteShift = "updateShiftStatus"
         static let UserAuth = "login"
         static let UserRegistration = "registeration"
+        static let UpdateUserProfile = "updateUserProfile"
     }
 }
 

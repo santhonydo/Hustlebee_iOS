@@ -19,6 +19,14 @@ class UserShiftDetailTableViewController: UITableViewController, MKMapViewDelega
     
     weak var delegate: UserShiftDetailTableViewControllerDelegate?
     
+    var activityIndicator: UIActivityIndicatorView!
+    
+    var isLoading = false {
+        didSet {
+            isLoading ? configActivitySpinner(.ON) : configActivitySpinner(.OFF)
+        }
+    }
+    
     @IBOutlet weak var position: UILabel!
     @IBOutlet weak var startDateAndTime: UILabel!
     @IBOutlet weak var endDateAndTime: UILabel!
@@ -29,17 +37,18 @@ class UserShiftDetailTableViewController: UITableViewController, MKMapViewDelega
     @IBOutlet weak var employerEmail: UILabel!
     @IBOutlet weak var address: UILabel!
     @IBOutlet weak var mapView: MKMapView!
-   
+    @IBOutlet weak var doneBtnOutlet: UIBarButtonItem!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.delegate = self
         updateUI()
         annotateShiftLocation()
     }
+    
     @IBAction func doneBtn(_ sender: AnyObject) {
         completeShift()
     }
-    
     
     // MARK: - Table View Delegate
     
@@ -51,13 +60,18 @@ class UserShiftDetailTableViewController: UITableViewController, MKMapViewDelega
             rowHeight = UITableViewAutomaticDimension
         }
         return rowHeight
-        
     }
 
     // MARK: - Func
     
     private func updateUI(){
+        if shift?.status == 2 {
+            print("shift status \(shift?.status)")
+            self.navigationItem.rightBarButtonItem = nil
+            navigationController?.navigationItem.rightBarButtonItem = nil
+        }
         self.title = shift?.user.companyName
+        navigationController?.navigationBar.topItem?.title = ""
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d, yyyy - h:mm a"
         
@@ -76,7 +90,9 @@ class UserShiftDetailTableViewController: UITableViewController, MKMapViewDelega
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 100.0
         tableView.tableFooterView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0))
-        
+        activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        activityIndicator.center = self.view.center
+        view.addSubview(activityIndicator)
     }
     
     private func annotateShiftLocation() {
@@ -96,14 +112,48 @@ class UserShiftDetailTableViewController: UITableViewController, MKMapViewDelega
     
     private func completeShift() {
         let currentDateTime = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        let currentDateTimeStr = dateFormatter.string(from: currentDateTime)
+        
         if let shift = shift{
             let shiftEndDateTime = shift.endDateAndTime
             if (currentDateTime.timeIntervalSince(shiftEndDateTime) > 0) {
-                print("time expired")
+                isLoading = true
+                DispatchQueue.global(qos: .userInitiated).async {
+                    Request.completeShift(shift.id, currentDateTimeStr, 2) { [weak weakSelf = self] data, error in
+                        DispatchQueue.main.async {
+                            weakSelf?.isLoading = false
+                            if let error = error {
+                                weakSelf?.present(UIView.warningAlert(title: "Error", message: error.localizedDescription), animated: true, completion: nil)
+                            } else {
+                                _ = weakSelf?.navigationController?.popViewController(animated: true)
+                                weakSelf?.delegate?.userShiftDetailTableViewControllerDidComplete(controller: self, didFinishAddingShift: shift)
+                            }
+                        }
+                    }
+                }
+                
             } else {
                 self.present(UIView.warningAlert(title: "Future Shift", message: "You cannot mark shift as completed until the end of your scheduled time.") , animated: true, completion: nil)
             }
         }
+    }
+    
+    private func configActivitySpinner(_ status: Spinner) {
+        switch status {
+            case .ON:
+                activityIndicator.isHidden = false
+                activityIndicator.startAnimating()
+            case .OFF:
+                activityIndicator.isHidden = true
+                activityIndicator.stopAnimating()
+        }
+    }
+    
+    private enum Spinner {
+        case ON
+        case OFF
     }
 
 }

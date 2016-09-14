@@ -15,11 +15,7 @@ protocol ShiftDetailsTableViewControllerDelegate: class {
 
 class ShiftDetailsTableViewController: UITableViewController, MKMapViewDelegate {
     
-    var shift: Shift? {
-        didSet {
-            print("got shift transfer")
-        }
-    }
+    var shift: Shift?
     
     var user: User?
     weak var delegate: ShiftDetailsTableViewControllerDelegate?
@@ -31,6 +27,7 @@ class ShiftDetailsTableViewController: UITableViewController, MKMapViewDelegate 
             isLoading ? configActivitySpinner(.ON) : configActivitySpinner(.OFF)
         }
     }
+    
     // MARK: - Outlets
     @IBOutlet weak var address: UILabel!
     @IBOutlet weak var hourlyRate: UILabel!
@@ -43,15 +40,21 @@ class ShiftDetailsTableViewController: UITableViewController, MKMapViewDelegate 
     // MARK: - Actions
     
     @IBAction func AcceptShift(_ sender: UIBarButtonItem) {
-        if (user != nil) {
-            let alert = UIAlertController(title: Messages.AcceptTitle, message: Messages.AcceptCondition, preferredStyle: UIAlertControllerStyle.alert)
-            let acceptAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { [weak weakSelf = self] Void in
-                weakSelf?.assignShift()
+        if let user = user, let shift = shift {
+            if !user.verified {
+                self.present(UIView.warningAlert(title: "Pending License Verification", message: "You cannot accept shifts until your license has been verified. Be sure to upload a valid photo ID in \"Profile > Edit\" menu."), animated: true, completion: nil)
+            } else if shift.position != user.profession {
+                self.present(UIView.warningAlert(title: "Scope of Practice Error", message: "You cannot accept shifts beyond your scope of practice. Share this shift with a friend and receive a referral bonus."), animated: true, completion: nil)
+            } else {
+                let alert = UIAlertController(title: Messages.AcceptTitle, message: Messages.AcceptCondition, preferredStyle: UIAlertControllerStyle.alert)
+                let acceptAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { [weak weakSelf = self] Void in
+                    weakSelf?.assignShift()
+                }
+                let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.destructive, handler: nil)
+                alert.addAction(acceptAction)
+                alert.addAction(cancelAction)
+                self.present(alert, animated: true)
             }
-            let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.destructive, handler: nil)
-            alert.addAction(acceptAction)
-            alert.addAction(cancelAction)
-            self.present(alert, animated: true)
         } else {
             self.present(UIView.warningAlert(title: "Please Log In", message: "Can't wait for you to start! Log in or create an account to accept shifts."), animated: true, completion: nil)
         }
@@ -166,6 +169,7 @@ class ShiftDetailsTableViewController: UITableViewController, MKMapViewDelegate 
         case ON
         case OFF
     }
+    
     private struct ShiftInfo {
         static let Address = "address"
     }

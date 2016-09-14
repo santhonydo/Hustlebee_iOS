@@ -1,0 +1,79 @@
+PODS:
+  - AWSAutoScaling (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSCloudWatch (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSCognito (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSCognitoIdentityProvider (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSCore (2.4.7)
+  - AWSDynamoDB (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSEC2 (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSElasticLoadBalancing (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSIoT (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSKinesis (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSLambda (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSMachineLearning (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSMobileAnalytics (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSS3 (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSSES (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSSimpleDB (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSSNS (2.4.7):
+    - AWSCore (= 2.4.7)
+  - AWSSQS (2.4.7):
+    - AWSCore (= 2.4.7)
+
+DEPENDENCIES:
+  - AWSAutoScaling
+  - AWSCloudWatch
+  - AWSCognito
+  - AWSCognitoIdentityProvider
+  - AWSDynamoDB
+  - AWSEC2
+  - AWSElasticLoadBalancing
+  - AWSIoT
+  - AWSKinesis
+  - AWSLambda
+  - AWSMachineLearning
+  - AWSMobileAnalytics
+  - AWSS3
+  - AWSSES
+  - AWSSimpleDB
+  - AWSSNS
+  - AWSSQS
+
+SPEC CHECKSUMS:
+  AWSAutoScaling: 757c8078f3e78d136362ab7ccbfd6b6ee577544d
+  AWSCloudWatch: f56798cf33237b5de594df5e4450c93a59a72e60
+  AWSCognito: 6aa404f15d1eb2b4b51f45322a409257b3248e79
+  AWSCognitoIdentityProvider: 2afc07e3e7b89738921845d7fe3369246a4358b9
+  AWSCore: 9a729a3c0050a51ece3547d546c327acdac7838a
+  AWSDynamoDB: 95c8d325fad2bea4d4ca70576876d9893d9dedd3
+  AWSEC2: f641f980c7180b96c50820781c681db26cf64ed2
+  AWSElasticLoadBalancing: 592cb9e3fce5ff0aafab75d045fa9342dc0bf3bd
+  AWSIoT: 3cbb97271ccb3a1463ac59bdc7452c32ca81aeae
+  AWSKinesis: d9767dab4ef59abcce60005f4540f9f76cb00517
+  AWSLambda: 10800dea35f48dc51164730b1c3d6b1a92a17487
+  AWSMachineLearning: a3536fbf944c517a5c69a0c0785b1bb176e22a3f
+  AWSMobileAnalytics: b372e8ca4bc0292a6937058dc3af2d0b5dba6c9f
+  AWSS3: 0f3c8ed11e04cd78cf86ed396c06330ab142db7a
+  AWSSES: 3fec9f9e3a310f0291347d91f9c9511dab00bdee
+  AWSSimpleDB: 1652d62607d5e2ab25ab87053b51dca7a4d0b146
+  AWSSNS: 45b3a02693808251ed388afcab0e90ec05b53f72
+  AWSSQS: 46f51dfa009c89dcca2898dd0e97de1922e826b7
+
+PODFILE CHECKSUM: ca8c540c357631443d912e9eb0827a94d81f498c
+
+COCOAPODS: 1.0.1

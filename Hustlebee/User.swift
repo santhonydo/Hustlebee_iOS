@@ -11,6 +11,8 @@ import Foundation
 class User: NSObject, NSCoding {
     let id: String
     let name: String
+    let firstName: String
+    let lastName: String
     let phoneNumber: String
     let email: String
     let profession: String?
@@ -30,6 +32,8 @@ class User: NSObject, NSCoding {
         guard
             let id = data?.value(forKey: UserInfo.ID) as? String,
             let name = data?.value(forKeyPath: UserInfo.Name) as? String,
+            let firstName = data?.value(forKeyPath: UserInfo.FirstName) as? String,
+            let lastName = data?.value(forKeyPath: UserInfo.LastName) as? String,
             let phoneNumber = data?.value(forKeyPath: UserInfo.Contact.PhoneNumber) as? String,
             let email = data?.value(forKeyPath: UserInfo.Contact.Email) as? String,
             let state = data?.value(forKey: UserInfo.Contact.State) as? String,
@@ -41,6 +45,8 @@ class User: NSObject, NSCoding {
         
         self.id = id
         self.name = name
+        self.firstName = firstName
+        self.lastName = lastName
         self.phoneNumber = phoneNumber
         self.email = email
         self.state = state
@@ -62,6 +68,8 @@ class User: NSObject, NSCoding {
         guard
             let id = aDecoder.decodeObject(forKey: UserInfo.ID) as? String,
             let name = aDecoder.decodeObject(forKey: UserInfo.Name) as? String,
+            let firstName = aDecoder.decodeObject(forKey: UserInfo.FirstName) as? String,
+            let lastName = aDecoder.decodeObject(forKey: UserInfo.LastName) as? String,
             let phoneNumber = aDecoder.decodeObject(forKey: UserInfo.Contact.PhoneNumber) as? String,
             let email = aDecoder.decodeObject(forKey: UserInfo.Contact.Email) as? String,
             let state = aDecoder.decodeObject(forKey: UserInfo.Contact.State) as? String,
@@ -73,6 +81,8 @@ class User: NSObject, NSCoding {
         
         userData[UserInfo.ID] = id as AnyObject
         userData[UserInfo.Name] = name as AnyObject
+        userData[UserInfo.FirstName] = firstName as AnyObject
+        userData[UserInfo.LastName] = lastName as AnyObject
         userData[UserInfo.Contact.PhoneNumber] = phoneNumber as AnyObject
         userData[UserInfo.Contact.Email] = email as AnyObject
         userData[UserInfo.Contact.State] = state as AnyObject
@@ -92,6 +102,8 @@ class User: NSObject, NSCoding {
     func encode(with aCoder: NSCoder) {
         aCoder.encode(id, forKey: UserInfo.ID)
         aCoder.encode(name, forKey: UserInfo.Name)
+        aCoder.encode(firstName, forKey: UserInfo.FirstName)
+        aCoder.encode(lastName, forKey: UserInfo.LastName)
         aCoder.encode(phoneNumber, forKey: UserInfo.Contact.PhoneNumber)
         aCoder.encode(email, forKey: UserInfo.Contact.Email)
         aCoder.encode(profession, forKey: UserInfo.Profession)
@@ -135,6 +147,8 @@ class User: NSObject, NSCoding {
     struct UserInfo {
         static let ID = "id"
         static let Name = "name"
+        static let FirstName = "firstName"
+        static let LastName = "lastName"
         static let Verified = "verified"
         static let ProfileImageURL = "profileImageURL"
         static let Profession = "profession"

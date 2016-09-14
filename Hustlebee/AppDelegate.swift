@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AWSCore
+import AWSCognito
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,8 +16,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        
+        customizeAppearance()
+        
         let userAuthenticated = UserDefaults.standard.bool(forKey: "userLoggedIn")
+        
     
         if userAuthenticated {
             self.window?.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
@@ -24,6 +30,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.rootViewController = rootViewController
         }
         
+        let cognitoIdentityPoolId = "us-east-1:c8bb575a-1995-4b55-a82c-9bf8e9c5cd23"
+        let cognitoRegionType = AWSRegionType.usEast1
+        let defaultServiceRegionType = AWSRegionType.usWest1
+        
+        let credentialProviders = AWSCognitoCredentialsProvider(regionType: cognitoRegionType, identityPoolId: cognitoIdentityPoolId)
+        let configuration = AWSServiceConfiguration(region: defaultServiceRegionType, credentialsProvider: credentialProviders)
+        AWSServiceManager.default().defaultServiceConfiguration = configuration
+    
         return true
     }
 
@@ -47,6 +61,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+    
+    func customizeAppearance() {
+        let barTintColor = UIColor(red: 228/255, green: 187/255, blue: 22/255, alpha: 1)
+        UISearchBar.appearance().barTintColor = barTintColor
+        window!.tintColor = barTintColor
     }
 
 

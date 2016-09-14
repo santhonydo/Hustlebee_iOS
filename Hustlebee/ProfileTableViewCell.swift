@@ -19,13 +19,13 @@ class ProfileTableViewCell: UITableViewCell {
     @IBOutlet weak var name: UILabel!
     @IBOutlet weak var profession: UILabel!
     @IBOutlet weak var profileImage: UIImageView!
-    @IBOutlet weak var scheduledShifts: UILabel!
+    @IBOutlet weak var scheduledShiftsBtn: UIButton!
+    @IBOutlet weak var completedShiftsBtn: UIButton!
    
     private func updateUI() {
         if let user = user {
             name.text = user.description
             profession.text = user.profession
-            scheduledShifts.text = "0 Scheduled"
             profileImage.image = UIImage(named: "bee_logo")
         }
     }

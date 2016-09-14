@@ -1,0 +1,6 @@
+framework module Pods_Hustlebee {
+  umbrella header "Pods-Hustlebee-umbrella.h"
+
+  export *
+  module * { export * }
+}

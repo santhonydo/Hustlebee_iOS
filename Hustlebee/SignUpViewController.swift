@@ -138,16 +138,16 @@ class SignUpViewController: UIViewController, UITextFieldDelegate, UIPickerViewD
         for key in registration.userData.keys {
             UserRegistrationInfo.UserData[key] = registration.userData[key]
         }
-        
+
         DispatchQueue.global(qos: .userInitiated).async { [weak weakSelf = self] in
-            weakSelf?.registration.registerUser() { [weak weakSelf = self] data, error in
+            weakSelf?.registration.registerUser() { data, error in
                 DispatchQueue.main.async{
                     weakSelf?.isLoading = false
                     if let error = error {
                         if error._domain == "userExist" {
                             weakSelf?.present(UIView.warningAlert(title: "Account Already Exist", message: "Please try again using a different email address."), animated: true, completion: nil)
                         }
-                    } else if let data = data {
+                    } else if data != nil {
                         UserDefaults.standard.set(true, forKey: "userLoggedIn")
                         let appDelegate = UIApplication.shared.delegate
                         appDelegate?.window??.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
